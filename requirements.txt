@@ -1,0 +1,7 @@
+# This file may be used to create an environment using:
+# $ conda create --name <env> --file <this file>
+flask=1.0.2=py37_1
+flask-mysqldb=0.2.0=pypi_0
+flask-wtf=0.14.2=py37_1
+passlib=1.7.1=py37h28b3542_0
+wtforms=2.2.1=py37_0
