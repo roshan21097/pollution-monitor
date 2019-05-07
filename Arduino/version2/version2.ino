@@ -25,6 +25,12 @@ int PM01Value = 0;        //define PM1.0 value of the air detector module
 int PM2_5Value = 0;       //define PM2.5 value of the air detector module
 int PM10Value = 0;       //define PM10 value of the air detector module
 char measure = 0;
+const int NO2=3; //NO2 sensor on analog 3
+const int CO=2; //CO sensor on analog 2
+float Vout = 0; //output voltage
+float Rs = 0; //Sensor Resistance
+float ppbNO2 = 0; //ppb NO2
+float ppmCO = 0; //ppm CO
 
 float H; // Humidity value
 
@@ -178,10 +184,27 @@ void setup() {
 
 }
 
+void MiCS()
+{
+  // read NO2 sensor:
+  Vout = analogRead(NO2)/409.2; // take reading and convert ADC value to voltage
+  Rs = 22000/((5/Vout) - 1);   // find sensor resistance from Vout, using 5V input & 22kOhm load resistor
+  ppbNO2 = (.000008*Rs - .0194)*1000;    //convert Rs to ppb concentration NO2 (equation derived from data found on http://a...content-available-to-author-only...i.es/sensors.php
+  Serial.print("PPB NO2= ");
+  Serial.println(ppbNO2);
+  // read CO sensor:
+  Vout = analogRead(CO)/409.2; // take reading and convert ADC value to voltage
+  Rs = 100000/((5/Vout) - 1);   // find sensor resistance from Vout, using 5V input & 100kOhm load resistor
+  ppmCO = 911.19*pow(2.71828,(-8.577*Rs/100000));    //convert Rs to ppm concentration CO
+  Serial.print("PPM CO= ");
+  Serial.println(ppmCO);
+}
+
 void loop() {
   // put your main code here, to run repeatedly:
   collectPressureData();
   collectPMData();
+  MiCS();
   collectDHTData();
   sendGSM();
   delay(20000);
@@ -230,6 +253,12 @@ void sendGSM()
   GSMSerial.print("&p=");
   Serial.print("&p=");
   GSMSerial.print(P);
+  GSMSerial.print("&co=");
+  Serial.print("&co=");
+  GSMSerial.print(ppmCO);
+  GSMSerial.print("&no2=");
+  Serial.print("&no2=");
+  GSMSerial.print(ppbNO2);
   Serial.print(P);
   GSMSerial.print("&pm01=");
   Serial.print("&pm01=");
