@@ -2,6 +2,7 @@
 #include <BMP280.h>
 #include <SoftwareSerial.h>
 #include <DHT.h>
+#include "MQ131.h"
 
 #define LENG 31   //0x42 + 31 bytes equal to 32 bytes
 #define P0 1013.25
@@ -27,6 +28,7 @@ int PM10Value = 0;       //define PM10 value of the air detector module
 char measure = 0;
 const int NO2=3; //NO2 sensor on analog 3
 const int CO=2; //CO sensor on analog 2
+float ozone;
 float Vout = 0; //output voltage
 float Rs = 0; //Sensor Resistance
 float ppbNO2 = 0; //ppb NO2
@@ -158,7 +160,8 @@ void collectDHTData()
   Serial.print(H);
   Serial.println("%");
 }
-
+//MQ131
+MQ131 sensor(2,A0, LOW_CONCENTRATION, 10000);//Pin no.2 for output and pin n0.A0 for input
 
 void setup() {
   // put your setup code here, to run once:
@@ -181,6 +184,21 @@ void setup() {
     Serial.println("Init. OK.");
   bmp.setOversampling(4);
   delay(10000);
+  
+  //MQ131
+  sensor.setEnv(T,H);
+  sensor.setR0(1250);
+  sensor.setTimeToRead(1000);
+  sensor.startHeater();
+  Serial.println("Heating!");
+  Serial.print("R0 = ");
+  Serial.print(sensor.getR0());
+  Serial.println(" Ohms");
+  Serial.print("Time to heat = ");
+  Serial.print(sensor.getTimeToRead());
+  Serial.println(" s");
+  delay(1000000);
+  
 
 }
 
@@ -207,6 +225,13 @@ void loop() {
   MiCS();
   collectDHTData();
   sendGSM();
+  
+  //MQ131
+  sensor.begin();
+  Serial.print("Concentration O3 : ");
+  ozone=sensor.getO3(UG_M3);
+  Serial.print(ozone);
+  Serial.println(" ug/m3");
   delay(20000);
 
 }
@@ -272,6 +297,10 @@ void sendGSM()
   Serial.print("&pm10=");
   GSMSerial.print(PM10Value);
   Serial.print(PM10Value);
+  GSMSerial.print("&o3=");
+  Serial.print("&o3=");
+  GSMSerial.print(ozone);
+  Serial.print(ozone);
   GSMSerial.print("&h=");
   Serial.print("&h=");
   GSMSerial.print(H);
