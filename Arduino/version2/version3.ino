@@ -161,7 +161,7 @@ void collectDHTData()
   Serial.println("%");
 }
 //MQ131
-MQ131 sensor(2,A0, LOW_CONCENTRATION, 10000);//Pin no.2 for output and pin n0.A0 for input
+MQ131 sensor(1,A0, LOW_CONCENTRATION, 10000);//Pin no.2 for output and pin n0.A0 for input
 
 void setup() {
   // put your setup code here, to run once:
@@ -170,7 +170,7 @@ void setup() {
   Serial.begin(9600);
 
   // Initialize DHT22
-  dht.begin();
+ // dht.begin();
 
   // Initialize BMP Sensor
   if (!bmp.begin()) {            // you prefer
@@ -183,12 +183,13 @@ void setup() {
   else
     Serial.println("Init. OK.");
   bmp.setOversampling(4);
-  delay(10000);
+  
   
   //MQ131
-  sensor.setEnv(T,H);
+  sensor.setEnv(T,35);
   sensor.setR0(1250);
-  sensor.setTimeToRead(1000);
+  sensor.setTimeToRead(1);
+  //sensor.calibrate();
   sensor.startHeater();
   Serial.println("Heating!");
   Serial.print("R0 = ");
@@ -197,7 +198,7 @@ void setup() {
   Serial.print("Time to heat = ");
   Serial.print(sensor.getTimeToRead());
   Serial.println(" s");
-  delay(1000000);
+  delay(1000);
   
 
 }
@@ -223,7 +224,7 @@ void loop() {
   collectPressureData();
   collectPMData();
   MiCS();
-  collectDHTData();
+  //collectDHTData();
   sendGSM();
   
   //MQ131
@@ -232,7 +233,7 @@ void loop() {
   ozone=sensor.getO3(UG_M3);
   Serial.print(ozone);
   Serial.println(" ug/m3");
-  delay(20000);
+  delay(2000);
 
 }
 
@@ -301,10 +302,10 @@ void sendGSM()
   Serial.print("&o3=");
   GSMSerial.print(ozone);
   Serial.print(ozone);
-  GSMSerial.print("&h=");
-  Serial.print("&h=");
-  GSMSerial.print(H);
-  Serial.print(H);
+  //GSMSerial.print("&h=");
+  //Serial.print("&h=");
+  //GSMSerial.print(H);
+  //Serial.print(H);
   GSMSerial.println("\"");
   toSerial();
   delay(1000);
